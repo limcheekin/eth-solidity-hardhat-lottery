@@ -1,6 +1,7 @@
 import "@nomicfoundation/hardhat-toolbox"
 import "dotenv/config"
 import "hardhat-deploy"
+import "hardhat-contract-sizer"
 import { HardhatUserConfig } from "hardhat/config"
 
 const SEPOLIA_RPC_URL =
@@ -13,6 +14,13 @@ const REPORT_GAS: boolean = process.env.REPORT_GAS ? Boolean(process.env.REPORT_
 
 const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
+    contractSizer: {
+        alphaSort: false,
+        disambiguatePaths: true,
+        runOnCompile: true,
+        strict: false,
+        only: [],
+    },
     namedAccounts: {
         deployer: {
             default: 0, // here this will by default take the first account as deployer
