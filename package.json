@@ -1,4 +1,8 @@
 {
+    "scripts": {
+        "lint": "solhint 'contracts/*.sol'",
+        "lint:fix": "solhint 'contracts/**/*.sol' --fix"
+    },
     "devDependencies": {
         "@chainlink/contracts": "^0.6.1",
         "@ethersproject/abi": "^5.7.0",
