@@ -1,0 +1,33 @@
+# Name of this GitHub Actions workflow.
+name: Semgrep
+
+on:
+    # Allow you to trigger the workflow manually
+    workflow_dispatch:
+    # Scan changed files in PRs (diff-aware scanning):
+    pull_request: {}
+    # Scan mainline branches and report all findings:
+    push:
+        branches: ["master", "main"]
+    # Schedule the CI job (this method uses cron syntax):
+    schedule:
+        - cron: "0 0 * * *" # Sets Semgrep to scan every day at 00:00 UTC.
+
+jobs:
+    semgrep:
+        # User definable name of this GitHub Actions job.
+        name: Scan solidity codes
+        # If you are self-hosting, change the following `runs-on` value:
+        runs-on: ubuntu-latest
+
+        # Skip any PR created by dependabot to avoid permission issues:
+        if: (github.actor != 'dependabot[bot]')
+
+        steps:
+            # Fetch project source with GitHub Actions Checkout.
+            - uses: actions/checkout@v3
+
+            # You may pin to the exact commit or the version.
+            # uses: returntocorp/semgrep-rules-test-action@81194d42d3755b24a2eef725138d16bfc61232a2
+            - name: semgrep-rules-test
+              uses: returntocorp/semgrep-rules-test-action@v0.2
