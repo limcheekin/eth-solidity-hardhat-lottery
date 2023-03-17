@@ -9,7 +9,15 @@ error Lottery__TransferFailed(address winner);
 error Lottery__NotOpen();
 error Lottery__UpkeepNotNeeded(uint256 status, uint256 numPlayers, uint256 balance, uint256 currentTimestamp);
 
-/* KeeperCompatibleInterface is not required for time-based automation */
+/**
+@title Lottery
+@author Patrick Collins, Lim Chee Kin
+@notice The contract handles a simple lottery game.
+@dev The lottery is operated by chainlink time-based upkeep calling performUpkeep() regularly.
+The frequency of upkeep calls is determined by schedule set in chainlink upkeep.
+The intervalInSeconds determined interval between lottery rounds.
+The VRF Coordinator is used as a ramdom number generator to pick random winner.
+*/
 contract Lottery is VRFConsumerBaseV2 {
     /* Type declarations */
     enum LotteryStatus {
@@ -20,8 +28,7 @@ contract Lottery is VRFConsumerBaseV2 {
     /* State variables */
     // The default is 3, but you can set this higher.
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
-    // For this example, retrieve 1 random values in one request.
-    // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+    // Retrieve 1 random values in one request.
     uint32 private constant NUM_WORDS = 1;
     VRFCoordinatorV2Interface private immutable coordinator;
     LotteryStatus private _lotteryStatus;
@@ -40,6 +47,15 @@ contract Lottery is VRFConsumerBaseV2 {
     event LotteryWinnerPicked(address indexed winner);
 
     /* Functions */
+    /**
+     * @notice Initializes the Lottery contract.
+     * @param vrfCoordinatorV2Address_ The address of the VRF Coordinator V2.
+     * @param subscriptionId_ The subscription ID to use for randomness requests.
+     * @param gasLane_ The gas lane to use for randomness requests.
+     * @param callbackGasLimit_ The gas limit to use for the callback function.
+     * @param intervalInSeconds_ The interval between lottery rounds, in seconds.
+     * @param entranceFee_ The fee required to enter the lottery.
+     */
     constructor(
         address vrfCoordinatorV2Address_,
         uint64 subscriptionId_,
@@ -58,6 +74,10 @@ contract Lottery is VRFConsumerBaseV2 {
         _lastTimestamp = block.timestamp;
     }
 
+    /**
+     * @notice Allows a user to enter the lottery by sending the entrance fee.
+     * @dev Reverts if msg.value is less than the entrance fee required or the lottery is not open.
+     */
     function enterLottery() external payable {
         if (msg.value < entranceFee) {
             revert Lottery__SendMoreToEnterLottery(msg.value);
@@ -69,6 +89,12 @@ contract Lottery is VRFConsumerBaseV2 {
         emit LotteryEntered(msg.sender);
     }
 
+    /**
+     * @notice Check if the lottery needs upkeep, and if so, request a random winner.
+     * @dev Upkeep is needed if the lottery is open, time has passed since the last upkeep,
+     * there are players, and there is a balance.
+     * Reverts if upkeep is not needed.
+     */
     function performUpkeep() external {
         bool upkeepNeeded = checkUpkeep();
         if (!upkeepNeeded) {
@@ -84,6 +110,10 @@ contract Lottery is VRFConsumerBaseV2 {
     }
 
     /* View/Pure functions */
+    /**
+     * @notice View the entrance fee for the lottery.
+     * @return The entrance fee in wei.
+     */
     function getEntranceFee() external view returns (uint256) {
         return entranceFee;
     }
@@ -104,14 +134,31 @@ contract Lottery is VRFConsumerBaseV2 {
         return _players.length;
     }
 
+    /**
+     * @notice View the timestamp of the lottery open.
+     * @return The timestamp of the lottery open.
+     */
     function getLastTimestamp() external view returns (uint256) {
         return _lastTimestamp;
     }
 
+    /**
+     * @notice View the interval for upkeep calls in seconds.
+     * @return The interval for upkeep calls in seconds.
+     */
     function getIntervalInSeconds() external view returns (uint256) {
         return intervalInSeconds;
     }
 
+    /**
+     * @notice Check if upkeep is needed for the lottery.
+     * @dev Upkeep is needed if following conditions are met:
+     * - The lottery is open
+     * - Time has passed since the last upkeep
+     * - There are players
+     * - The lottery contract has balance.
+     * @return upkeepNeeded True if upkeep is needed, false otherwise.
+     */
     function checkUpkeep() public returns (bool upkeepNeeded) {
         bool isOpen = _lotteryStatus == LotteryStatus.OPEN;
         bool isTimePassed = block.timestamp - _lastTimestamp > intervalInSeconds;
@@ -121,6 +168,12 @@ contract Lottery is VRFConsumerBaseV2 {
         return upkeepNeeded;
     }
 
+    /**
+     * @notice Pick a random winner for the lottery and transfer them the balance.
+     * @dev Uses the random number return from VRF Coordinator to select a winner
+     * from the player list. Transfers the balance to the winner and emits a LotteryWinnerPicked event.
+     * Reverts if transfer fund to the winner failed.
+     */
     function fulfillRandomWords(uint256 /* requestId_, */, uint256[] memory randomWords_) internal override {
         uint256 indexOfWinner = randomWords_[0] % _players.length;
         address payable winner = _players[indexOfWinner];
@@ -135,7 +188,12 @@ contract Lottery is VRFConsumerBaseV2 {
         emit LotteryWinnerPicked(winner);
     }
 
-    // Assumes the subscription is funded sufficiently.
+    /**
+     * @notice Make a request to the VRF Coordinator to get a random number for picking the lottery winner.
+     * @dev Changes the lottery status to CALCULATING and requests a random number from the VRF Coordinator.
+     * Emits a LotteryWinnerRequested event with the request ID.
+     * Reverts if the subscription is not set and funded.
+     */
     function requestRandomWinner() private {
         _lotteryStatus = LotteryStatus.CALCULATING;
         // Will revert if subscription is not set and funded.

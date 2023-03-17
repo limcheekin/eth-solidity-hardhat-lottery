@@ -2,13 +2,11 @@ import "@nomicfoundation/hardhat-toolbox"
 import "dotenv/config"
 import "hardhat-deploy"
 import "hardhat-contract-sizer"
+import "solidity-docgen"
 import { HardhatUserConfig } from "hardhat/config"
 
-const SEPOLIA_RPC_URL =
-    process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.alchemyapi.io/v2/your-api-key"
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.alchemyapi.io/v2/your-api-key"
 const PRIVATE_KEY = process.env.PRIVATE_KEY
-
-// Your API key for Etherscan, obtain one at https://etherscan.io/
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key"
 const REPORT_GAS: boolean = process.env.REPORT_GAS ? Boolean(process.env.REPORT_GAS) : false
 

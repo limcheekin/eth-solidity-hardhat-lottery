@@ -3,7 +3,8 @@
         "lint": "solhint 'contracts/*.sol'",
         "lint:fix": "solhint 'contracts/**/*.sol' --fix",
         "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox",
-        "prettier": "prettier --write 'contracts/Lottery.sol'"
+        "prettier": "prettier --write 'contracts/Lottery.sol'",
+        "docgen": "yarn hardhat docgen"
     },
     "devDependencies": {
         "@chainlink/contracts": "^0.6.1",
@@ -30,6 +31,7 @@
         "prettier-plugin-solidity": "^1.1.3",
         "solhint": "^3.4.1",
         "solidity-coverage": "^0.8.2",
+        "solidity-docgen": "^0.6.0-beta.35",
         "ts-node": "^10.9.1",
         "typechain": "^8.1.1",
         "typescript": "^4.9.5"
