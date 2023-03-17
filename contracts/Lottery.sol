@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import {KeeperCompatibleInterface} from "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 error Lottery__SendMoreToEnterLottery(uint256 value);
@@ -11,7 +10,7 @@ error Lottery__NotOpen();
 error Lottery__UpkeepNotNeeded(uint256 status, uint256 numPlayers, uint256 balance, uint256 currentTimestamp);
 
 /* KeeperCompatibleInterface is not required for time-based automation */
-contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
+contract Lottery is VRFConsumerBaseV2 {
     /* Type declarations */
     enum LotteryStatus {
         OPEN,
@@ -70,8 +69,8 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         emit LotteryEntered(msg.sender);
     }
 
-    function performUpkeep(bytes calldata performData) external override {
-        (bool upkeepNeeded, ) = checkUpkeep(performData);
+    function performUpkeep() external {
+        bool upkeepNeeded = checkUpkeep();
         if (!upkeepNeeded) {
             revert Lottery__UpkeepNotNeeded(
                 uint256(_lotteryStatus),
@@ -113,15 +112,13 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         return intervalInSeconds;
     }
 
-    function checkUpkeep(
-        bytes calldata /* checkData */
-    ) public override returns (bool upkeepNeeded, bytes memory /* performData */) {
+    function checkUpkeep() public returns (bool upkeepNeeded) {
         bool isOpen = _lotteryStatus == LotteryStatus.OPEN;
         bool isTimePassed = block.timestamp - _lastTimestamp > intervalInSeconds;
         bool hasPlayers = _players.length > 0;
         bool hasBalance = address(this).balance > 0;
         upkeepNeeded = isOpen && isTimePassed && hasPlayers && hasBalance;
-        return (upkeepNeeded, "");
+        return upkeepNeeded;
     }
 
     function fulfillRandomWords(uint256 /* requestId_, */, uint256[] memory randomWords_) internal override {
