@@ -60,10 +60,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ILESKOV/Lottery"
+        "url": "git+https://github.com/limcheekin/eth-solidity-hardhat-lottery"
     },
     "bugs": {
-        "url": "https://github.com/ILESKOV/Lottery/issues"
+        "url": "https://github.com/limcheekin/eth-solidity-hardhat-lottery/issues"
     },
-    "homepage": "https://github.com/ILESKOV/Lottery#readme"
+    "homepage": "https://github.com/limcheekin/eth-solidity-hardhat-lottery#readme"
 }
