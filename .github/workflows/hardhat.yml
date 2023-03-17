@@ -34,7 +34,7 @@ jobs:
             - name: Copy .env file
               run: cp .env.ci .env
 
-            - name: Run Test Coverage
+            - name: Run Unit Tests
               run: yarn test
 
             - name: Display Gas Report
