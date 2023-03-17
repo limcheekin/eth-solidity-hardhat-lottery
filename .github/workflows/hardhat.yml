@@ -20,7 +20,7 @@ jobs:
               with:
                   node-version: 18
             - name: Show NodeJS version
-              run: npm --version
+              run: node --version
 
             - name: Enabled Yarn #REF: https://yarnpkg.com/getting-started/install
               run: corepack enable
