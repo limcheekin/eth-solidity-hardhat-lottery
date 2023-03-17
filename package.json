@@ -1,11 +1,30 @@
 {
+    "name": "eth-solidity-hardhat-lottery",
+    "version": "1.0.0",
+    "description": "Lottery contract with Chainlink VRF2 and Automation. Therefore, for the correct operation of the contract, it is necessary to create subscription on > https://vrf.chain.link/sepolia for sepolia testnet or https://vrf.chain.link/mainnet for mainnet and create time-based upkeep on > https://automation.chain.link/sepolia for sepolia testnet or https://automation.chain.link/mainnet for mainnet.",
+    "main": "hardhat.config.ts",
     "scripts": {
-        "lint": "solhint 'contracts/*.sol'",
+        "test": "yarn hardhat test",
+        "test:sepolia": "yarn hardhat test --network sepolia",
+        "deploy": "yarn hardhat deploy --network localhost",
+        "deploy:sepolia": "yarn hardhat deploy --network sepolia",
+        "lint": "solhint 'contracts/**/*.sol'",
         "lint:fix": "solhint 'contracts/**/*.sol' --fix",
         "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox",
         "prettier": "prettier --write 'contracts/Lottery.sol'",
-        "docgen": "yarn hardhat docgen"
+        "docgen": "yarn hardhat docgen",
+        "size": "yarn hardhat size-contracts",
+        "coverage": "yarn hardhat coverage"
     },
+    "keywords": [
+        "lottery",
+        "random number generation",
+        "scheduler",
+        "chainlink vrf2",
+        "chainlink automation"
+    ],
+    "author": "Patrick Collins, Lim Chee Kin",
+    "license": "MIT",
     "devDependencies": {
         "@chainlink/contracts": "^0.6.1",
         "@ethersproject/abi": "^5.7.0",
@@ -35,5 +54,16 @@
         "ts-node": "^10.9.1",
         "typechain": "^8.1.1",
         "typescript": "^4.9.5"
-    }
+    },
+    "directories": {
+        "test": "test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ILESKOV/Lottery"
+    },
+    "bugs": {
+        "url": "https://github.com/ILESKOV/Lottery/issues"
+    },
+    "homepage": "https://github.com/ILESKOV/Lottery#readme"
 }
