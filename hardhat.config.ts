@@ -11,6 +11,15 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API k
 const REPORT_GAS: boolean = process.env.REPORT_GAS ? Boolean(process.env.REPORT_GAS) : false
 
 const config: HardhatUserConfig = {
+    solidity: {
+        version: "0.8.19",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200,
+            },
+        },
+    },
     defaultNetwork: "hardhat",
     contractSizer: {
         alphaSort: false,
@@ -55,7 +64,6 @@ const config: HardhatUserConfig = {
         noColors: true,
         coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     },
-    solidity: "0.8.19",
     mocha: {
         timeout: 200000, // 200 seconds max for running tests
     },
