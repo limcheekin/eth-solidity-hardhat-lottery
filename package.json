@@ -2,7 +2,8 @@
     "scripts": {
         "lint": "solhint 'contracts/*.sol'",
         "lint:fix": "solhint 'contracts/**/*.sol' --fix",
-        "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox"
+        "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox",
+        "prettier": "prettier --write 'contracts/Lottery.sol'"
     },
     "devDependencies": {
         "@chainlink/contracts": "^0.6.1",
