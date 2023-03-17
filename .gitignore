@@ -100,3 +100,8 @@ lint/tmp/
 # lint/reports/
 
 gas-report.txt
+
+# yarn related directory and files
+.yarn
+.yarnrc
+.yarnrc.yml
