@@ -1,0 +1,44 @@
+# Reference: https://github.com/marketplace/actions/setup-node-js-environment
+
+name: Hardhat Build
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup NodeJS 18
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: Show NodeJS version
+              run: npm --version
+
+            - name: Enabled Yarn #REF: https://yarnpkg.com/getting-started/install
+              run: corepack enable
+
+            - name: Set Yarn Version
+              run: yarn set version 1.22.19
+
+            - name: Install Dependencies
+              run: yarn install
+
+            - name: Copy .env file
+              run: cp .env.ci to .env
+
+            - name: Run Test Coverage
+              run: yarn test
+
+            - name: Display Gas Report
+              run: cat gas-report.txt
+
+            - name: Run Test Coverage
+              run: yarn coverage
