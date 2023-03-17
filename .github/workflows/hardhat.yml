@@ -32,7 +32,7 @@ jobs:
               run: yarn install
 
             - name: Copy .env file
-              run: cp .env.ci to .env
+              run: cp .env.ci .env
 
             - name: Run Test Coverage
               run: yarn test
