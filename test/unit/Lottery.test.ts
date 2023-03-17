@@ -1,8 +1,8 @@
+import "dotenv/config"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
-import { networkConfig } from "../../helper-hardhat-config"
 import { Lottery, VRFCoordinatorV2Mock } from "../../typechain-types"
 
 const chainId = network.config.chainId
@@ -37,7 +37,7 @@ chainId != 31337
                   // And ideally, we'd make this check everything
                   const lotteryStatus = (await lottery.getLotteryStatus()).toString()
                   assert.equal(lotteryStatus, "0")
-                  assert.equal(interval.toString(), networkConfig[chainId]["keepersUpdateInterval"])
+                  assert.equal(interval.toString(), process.env.UPKEEP_PERFORM_IN_SECONDS)
               })
           })
 

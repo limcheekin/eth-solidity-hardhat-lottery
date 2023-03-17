@@ -1,9 +1,11 @@
+import "dotenv/config"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { DeployFunction } from "hardhat-deploy/types"
-import { networkConfig, VERIFICATION_BLOCK_CONFIRMATIONS, LINE } from "../helper-hardhat-config"
 import verify from "../utils/verify"
 
 const FUND_AMOUNT = "1000000000000000000000"
+const VERIFICATION_BLOCK_CONFIRMATIONS = 6
+const LINE = "-".repeat(100)
 
 const deployLottery: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, network, ethers } = hre
@@ -28,18 +30,18 @@ const deployLottery: DeployFunction = async function (hre: HardhatRuntimeEnviron
         // Our mock makes it so we don't actually have to worry about sending fund
         await vrfCoordinatorV2Mock.fundSubscription(subscriptionId, FUND_AMOUNT)
     } else {
-        vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"]
-        subscriptionId = networkConfig[chainId]["subscriptionId"]
+        vrfCoordinatorV2Address = process.env.VRF_COORDINATOR_V2
+        subscriptionId = process.env.SUBSCRIPTION_ID
         waitBlockConfirmations = VERIFICATION_BLOCK_CONFIRMATIONS
     }
 
     const args: any[] = [
         vrfCoordinatorV2Address,
         subscriptionId,
-        networkConfig[chainId]["gasLane"],
-        networkConfig[chainId]["callbackGasLimit"],
-        networkConfig[chainId]["keepersUpdateInterval"],
-        networkConfig[chainId]["lotteryEntranceFee"],
+        process.env.GAS_LANE,
+        process.env.CALLBACK_GAS_LIMIT,
+        process.env.UPKEEP_PERFORM_IN_SECONDS,
+        process.env.LOTTERY_ENTRANCE_FEE,
     ]
     const lottery = await deploy("Lottery", {
         from: deployer,
