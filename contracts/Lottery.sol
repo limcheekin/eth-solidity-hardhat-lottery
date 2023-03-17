@@ -1,21 +1,14 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.19;
 
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import {KeeperCompatibleInterface} from "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
-// import "hardhat/console.sol";
 
 error Lottery__SendMoreToEnterLottery(uint256 value);
 error Lottery__TransferFailed(address winner);
 error Lottery__NotOpen();
-error Lottery__UpkeepNotNeeded(
-    uint256 status,
-    uint256 numPlayers,
-    uint256 balance,
-    uint256 currentTimestamp
-);
+error Lottery__UpkeepNotNeeded(uint256 status, uint256 numPlayers, uint256 balance, uint256 currentTimestamp);
 
 /* KeeperCompatibleInterface is not required for time-based automation */
 contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
@@ -25,32 +18,29 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         CALCULATING
     }
 
-    /* State Variables */
-    uint256 private immutable entranceFee;
-    uint64 private immutable subscriptionId;
-    address payable[] private _players;
-    address private _lastWinner;
-    LotteryStatus private _lotteryStatus;
-    uint256 private _lastTimestamp;
-    uint256 private immutable intervalInSeconds;
-    VRFCoordinatorV2Interface private immutable coordinator;
-
-    bytes32 private immutable gasLane;
-
-    uint32 private immutable callbackGasLimit;
-
+    /* State variables */
     // The default is 3, but you can set this higher.
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
-
     // For this example, retrieve 1 random values in one request.
     // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
     uint32 private constant NUM_WORDS = 1;
+    VRFCoordinatorV2Interface private immutable coordinator;
+    LotteryStatus private _lotteryStatus;
+    uint32 private immutable callbackGasLimit;
+    uint64 private immutable subscriptionId;
+    uint256 private immutable entranceFee;
+    uint256 private immutable intervalInSeconds;
+    bytes32 private immutable gasLane;
+    uint256 private _lastTimestamp;
+    address private _lastWinner;
+    address payable[] private _players;
 
     /* Events */
     event LotteryEntered(address indexed player);
     event LotteryWinnerRequested(uint256 indexed requestId);
     event LotteryWinnerPicked(address indexed winner);
 
+    /* Functions */
     constructor(
         address vrfCoordinatorV2Address_,
         uint64 subscriptionId_,
@@ -63,10 +53,10 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         subscriptionId = subscriptionId_;
         gasLane = gasLane_;
         callbackGasLimit = callbackGasLimit_;
+        intervalInSeconds = intervalInSeconds_;
         entranceFee = entranceFee_;
         _lotteryStatus = LotteryStatus.OPEN;
         _lastTimestamp = block.timestamp;
-        intervalInSeconds = intervalInSeconds_;
     }
 
     function enterLottery() external payable {
@@ -78,27 +68,6 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         }
         _players.push(payable(msg.sender));
         emit LotteryEntered(msg.sender);
-    }
-
-    function checkUpkeep(
-        bytes calldata /* checkData */
-    ) public override returns (bool upkeepNeeded, bytes memory /* performData */) {
-        bool isOpen = _lotteryStatus == LotteryStatus.OPEN;
-        bool isTimePassed = block.timestamp - _lastTimestamp > intervalInSeconds;
-        bool hasPlayers = _players.length > 0;
-        bool hasBalance = address(this).balance > 0;
-
-        /*
-        console.log(
-            "isTimePassed %s = block.timestamp %s - _lastTimestamp %s",
-            isTimePassed,
-            block.timestamp,
-            _lastTimestamp
-        );
-        */
-
-        upkeepNeeded = isOpen && isTimePassed && hasPlayers && hasBalance;
-        return (upkeepNeeded, "");
     }
 
     function performUpkeep(bytes calldata performData) external override {
@@ -113,39 +82,6 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
         } else {
             requestRandomWinner();
         }
-    }
-
-    // Assumes the subscription is funded sufficiently.
-    function requestRandomWinner() private {
-        _lotteryStatus = LotteryStatus.CALCULATING;
-        // Will revert if subscription is not set and funded.
-        uint256 requestId = coordinator.requestRandomWords(
-            gasLane,
-            subscriptionId,
-            REQUEST_CONFIRMATIONS,
-            callbackGasLimit,
-            NUM_WORDS
-        );
-
-        emit LotteryWinnerRequested(requestId);
-    }
-
-    function fulfillRandomWords(
-        uint256 /* requestId_, */,
-        uint256[] memory randomWords_
-    ) internal override {
-        uint256 indexOfWinner = randomWords_[0] % _players.length;
-        address payable winner = _players[indexOfWinner];
-        _lastWinner = winner;
-        _lotteryStatus = LotteryStatus.OPEN;
-        delete _players;
-        _lastTimestamp = block.timestamp;
-        (bool success, ) = winner.call{value: address(this).balance}("");
-        if (!success) {
-            revert Lottery__TransferFailed(winner);
-        }
-
-        emit LotteryWinnerPicked(winner);
     }
 
     /* View/Pure functions */
@@ -175,5 +111,44 @@ contract Lottery is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     function getIntervalInSeconds() external view returns (uint256) {
         return intervalInSeconds;
+    }
+
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    ) public override returns (bool upkeepNeeded, bytes memory /* performData */) {
+        bool isOpen = _lotteryStatus == LotteryStatus.OPEN;
+        bool isTimePassed = block.timestamp - _lastTimestamp > intervalInSeconds;
+        bool hasPlayers = _players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+        upkeepNeeded = isOpen && isTimePassed && hasPlayers && hasBalance;
+        return (upkeepNeeded, "");
+    }
+
+    function fulfillRandomWords(uint256 /* requestId_, */, uint256[] memory randomWords_) internal override {
+        uint256 indexOfWinner = randomWords_[0] % _players.length;
+        address payable winner = _players[indexOfWinner];
+        _lastWinner = winner;
+        _lotteryStatus = LotteryStatus.OPEN;
+        delete _players;
+        _lastTimestamp = block.timestamp;
+        (bool success, ) = winner.call{value: address(this).balance}("");
+        if (!success) {
+            revert Lottery__TransferFailed(winner);
+        }
+        emit LotteryWinnerPicked(winner);
+    }
+
+    // Assumes the subscription is funded sufficiently.
+    function requestRandomWinner() private {
+        _lotteryStatus = LotteryStatus.CALCULATING;
+        // Will revert if subscription is not set and funded.
+        uint256 requestId = coordinator.requestRandomWords(
+            gasLane,
+            subscriptionId,
+            REQUEST_CONFIRMATIONS,
+            callbackGasLimit,
+            NUM_WORDS
+        );
+        emit LotteryWinnerRequested(requestId);
     }
 }
