@@ -52,7 +52,7 @@ contract Lottery is VRFConsumerBaseV2 {
      * @param vrfCoordinatorV2Address_ The address of the VRF Coordinator V2.
      * @param subscriptionId_ The subscription ID to use for randomness requests.
      * @param gasLane_ The gas lane to use for randomness requests.
-     * @param callbackGasLimit_ The gas limit to use for the callback function.
+     * @param callbackGasLimit_ The gas limit to use for the callback function: fulfillRandomWords.
      * @param intervalInSeconds_ The interval between lottery rounds, in seconds.
      * @param entranceFee_ The fee required to enter the lottery.
      */
