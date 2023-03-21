@@ -11,7 +11,7 @@
         "lint": "solhint 'contracts/**/*.sol'",
         "lint:fix": "solhint 'contracts/**/*.sol' --fix",
         "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox",
-        "prettier": "prettier --write 'contracts/Lottery.sol'",
+        "format": "prettier --write 'contracts/Lottery.sol'",
         "docgen": "yarn hardhat docgen",
         "size": "yarn hardhat size-contracts",
         "coverage": "yarn hardhat coverage"
